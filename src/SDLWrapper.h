@@ -12,6 +12,14 @@
 
 namespace SDL {
 
+/// Wraps SDL errors that are not reasonable to return in-band (panic-grade).
+class Error : public std::runtime_error
+{
+public:
+
+	Error(const std::string &reason_) : std::runtime_error(reason_) {}
+};
+
 //---
 
 class OkAble
@@ -23,18 +31,17 @@ public:
 
 //---
 
-class Library : public virtual OkAble
+/// Wraps SDL initialization; SDL_Init() is called on construction,
+/// and SDL_Quit() upon destruction.
+class Library
 {
 public:
 
+	/// Calls SDL_Init(). Throws SDL::Error if this fails.
 	Library(uint32_t initFlags = SDL_INIT_EVERYTHING);
 	Library(const Library& src) = delete;
 	~Library();
-	bool Ok() const { return ok; }
-
-private:
-
-	bool ok = false;
+	static std::string getError() { return std::string(SDL_GetError()); }
 };
 
 //---
@@ -150,7 +157,7 @@ public:
 	int GetPitch() const { return wrapped ? wrapped->pitch : 0; }
 
 	/// Blits a rectangle of pixels from this surface to the target surface.
-	bool Blit(const SDL::Rect& srcRect, SDL::Surface& dest, SDL::Rect& destRect) const;
+	void blit(const SDL::Rect& srcRect, SDL::Surface& dest, SDL::Rect& destRect) const;
 };
 
 //---
@@ -215,11 +222,10 @@ public:
 	Window(const std::string& title, int width, int height);
 	Window(const Window&) = delete;
 	~Window();
-	bool Ok() const { return ok; }
+	uint32_t getID() { return SDL_GetWindowID(wnd); }
 
 private:
 
-	bool ok = false;
 	SDL_Window* wnd = nullptr;
 	SDL_GLContext ctx = nullptr;
 };

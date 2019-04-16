@@ -6,8 +6,8 @@ namespace SDL {
 
 Library::Library(uint32_t initFlags)
 {
-	if (SDL_Init(initFlags) == 0) {
-		ok = true;
+	if (SDL_Init(initFlags) != 0) {
+		throw SDL::Error("SDL::Library::Library(): SDL_Init() failed: " + Library::getError());
 	}
 }
 
@@ -16,7 +16,6 @@ Library::Library(uint32_t initFlags)
 Library::~Library()
 {
 	SDL_Quit();
-	ok = false;
 }
 
 //---
@@ -38,8 +37,10 @@ void EventLoop::Run()
 {
 	bool redrawNeeded = false;
 	bool haveEvent = false;
+	std::vector<SDL_Window*> windowsToRedraw;
 	SDL_Event event;
 	while (1) {
+		windowsToRedraw.clear();
 
 		// wait for any incoming events, then handle the whole batch
 		SDL_WaitEvent(&event);
@@ -62,6 +63,7 @@ void EventLoop::Run()
 			else if (event.type == SDL_WINDOWEVENT) {
 				if (event.window.event == SDL_WINDOWEVENT_EXPOSED) {
 					redrawNeeded = true;
+					windowsToRedraw.push_back(SDL_GetWindowFromID(event.window.windowID));
 				}
 				if (event.window.event == SDL_WINDOWEVENT_RESIZED) {
 					if (OnWindowResized)
@@ -77,8 +79,13 @@ void EventLoop::Run()
 		if (quitRequested) break;
 
 		if (redrawNeeded) {
-			if (OnRedraw)
-				OnRedraw();
+			for (auto window : windowsToRedraw) {
+				if (OnRedraw) {
+					OnRedraw();
+				}
+				SDL_GL_SwapWindow(window);
+			}
+			windowsToRedraw.clear();
 		}
 	}
 }
@@ -102,34 +109,28 @@ void EventLoop::PushUserEvent(int code, void* data1, void* data2)
 Surface::Surface(int width, int height, int depth, uint32_t format)
 {
 	if (width < 0 || height < 0 || depth < 0) {
-		SDL_SetError("surface dimensions must be >= 0");
-		return;
+		throw Error("SDL::Surface::Surface(): Surface dimensions must be >= 0");
 	}
 	wrapped = SDL_CreateRGBSurfaceWithFormat(0, width, height, depth, format);
+	if (!wrapped) {
+		throw Error("SDL::Surface::Surface(): SDL_CreateRGBSurfaceWithFormat() failed: " + Library::getError());
+	}
 }
 
 //---
 
 Surface::~Surface()
 {
-	Discard();
-}
-
-//---
-
-void Surface::Discard()
-{
-	if (wrapped) {
+	if (wrapped)
 		SDL_FreeSurface(wrapped);
-		wrapped = nullptr;
-	}
 }
 
 //---
 
-bool Surface::Blit(const SDL::Rect& rect, SDL::Surface& dest, SDL::Rect& destRect) const
+void Surface::blit(const SDL::Rect& rect, SDL::Surface& dest, SDL::Rect& destRect) const
 {
-	return (0 == SDL_BlitSurface(wrapped, rect, dest.GetWrapped(), destRect));
+	if (SDL_BlitSurface(wrapped, rect, dest.GetWrapped(), destRect) != 0)
+		throw Error("SDL::Surface::Blit(): SDL_BlitSurface() failed: " + Library::getError());
 }
 
 //---
@@ -222,12 +223,15 @@ Window::Window(const std::string& title, int width, int height)
 		SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
 		width, height,
 		SDL_WINDOW_OPENGL|SDL_WINDOW_ALLOW_HIGHDPI);
-	if (!wnd) return;
+	if (!wnd) {
+		throw Error("SDL::Window::Window(): SDL_CreateWindow() failed: " + Library::getError());
+	}
 
 	ctx = SDL_GL_CreateContext(wnd);
-	if (!ctx) return;
-
-	ok = true;
+	if (!ctx) {
+		SDL_DestroyWindow(wnd);
+		throw Error("SDL::Window::Window(): SDL_GL_CreateContext() failed: " + Library::getError());
+	}
 }
 
 Window::~Window()

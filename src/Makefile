@@ -1,7 +1,7 @@
 CXX=g++ -std=c++2a -c
-CXXFLAGS=-O2 -ggdb -I /usr/include/SDL2 -I thirdparty
+CXXFLAGS=-O2 -ggdb -I /usr/include/SDL2 -I thirdparty -I GL
 LINK=g++
-LINKFLAGS=-lm -lSDL2
+LINKFLAGS=-lm -lSDL2 -lGL
 
 EXE=mjewels
 
