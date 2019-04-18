@@ -1,8 +1,7 @@
 #include "MapFile.h"
 #include "LoadFont.h"
 #include "ToUnicode.h"
-#include "SDL.h"
-#include "SDLWrapper.h"
+#include "App.h"
 #include <memory>
 #include <array>
 #include <iostream>
@@ -23,6 +22,9 @@ std::array<const char*, 2> kFontFileCandidates = {
 
 int main(int argc, const char** argv)
 {
+	App app("MidnightJewels");
+
+/*
 	SDL::Library libSDL;
 	if (!libSDL.Ok()) {
 		std::cerr << "error: could not initialize SDL: " << SDL_GetError() << std::endl;
@@ -31,18 +33,20 @@ int main(int argc, const char** argv)
 
 	// set locale (important otherwise the default is C and we don't have Unicode!)
 	std::locale::global(std::locale("en_US.UTF-8"));
+*/
 
 /*
 	SDL_Rect displayUsableBounds;
 	SDL_GetDisplayUsableBounds(DISPLAY_NUMBER, &displayUsableBounds);
 */
 
+/*
 	SDL::Window window(kDefWindowTitle, kDefWindowWidth, kDefWindowHeight);
 	if (!window.Ok()) {
 		std::cerr << "Could not create window: " << SDL_GetError() << std::endl;
 		return 127;		
 	}
-
+*/
 /*
 	const int windowWidth = (options.explicitWidth > 0) ? options.explicitWidth : displayUsableBounds.w/2;
 	const int windowHeight = (options.explicitHeight > 0) ? options.explicitHeight : displayUsableBounds.h/8;
@@ -131,7 +135,7 @@ int main(int argc, const char** argv)
 	messageSurface.Discard();
 */
 
-	SDL::EventLoop eventLoop(libSDL);
+//	SDL::EventLoop eventLoop(libSDL);
 
 /*
 	// install timer for closing after specified time; it sends a UserEvent we then catch in the event loop
@@ -149,11 +153,13 @@ int main(int argc, const char** argv)
 		SDL_RenderPresent(renderer);
 	};
 */
+/*
 	eventLoop.OnKey = [&eventLoop](const SDL_KeyboardEvent &event) {
 		if (event.keysym.scancode == SDL_SCANCODE_ESCAPE) {
 			eventLoop.quitRequested = true;
 		}
 	};
+*/
 /*
 	eventLoop.OnMouseButton = [&eventLoop, options](const SDL_MouseButtonEvent &event) {
 		if (options.closeOnClick) {
@@ -166,7 +172,7 @@ int main(int argc, const char** argv)
 		eventLoop.quitRequested = true;
 	};
 */
-	eventLoop.Run();
+//	eventLoop.Run();
 
 	return 0;
 }
