@@ -14,8 +14,6 @@ App::App(const char* staticAppName)
 	libSDL = std::make_unique<SDL::Library>();
 	if (!libSDL->Ok()) return;
 
-	vulkan = std::make_unique<Vulkan::Instance>(staticAppName);
-
 	window = SDL_CreateWindow(
 		staticAppName,
 		SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
@@ -25,6 +23,8 @@ App::App(const char* staticAppName)
 		SDL_Log("SDL_CreateWindow() failed: %s\n", SDL_GetError());
 		return;
 	}
+
+	vulkan = std::make_unique<Vulkan::Instance>(staticAppName);
 }
 
 //---

@@ -208,33 +208,17 @@ uint32_t Timer::CallPayload(uint32_t timePassed, void* indirectThis)
 
 Window::Window(const std::string& title, int width, int height)
 {
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 5);
-	SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
-	SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
-	SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
-	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
-	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-
 	wnd = SDL_CreateWindow(
 		title.c_str(),
 		SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
 		width, height,
-		SDL_WINDOW_OPENGL|SDL_WINDOW_ALLOW_HIGHDPI);
-	if (!wnd) return;
-
-	ctx = SDL_GL_CreateContext(wnd);
-	if (!ctx) return;
-
-	ok = true;
+		SDL_WINDOW_VULKAN|SDL_WINDOW_ALLOW_HIGHDPI);
+	if (!wnd)
+		throw SDL::Error("SDL_CreateWindow() failed: " + std::string(SDL_GetError()));
 }
 
 Window::~Window()
 {
-	if (ctx) {
-		SDL_GL_DeleteContext(ctx);
-	}
 	if (wnd) {
 		SDL_DestroyWindow(wnd);
 	}

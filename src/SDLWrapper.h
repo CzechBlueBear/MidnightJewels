@@ -14,6 +14,15 @@ namespace SDL {
 
 //---
 
+class Error : public std::runtime_error
+{
+public:
+
+	Error(const std::string& what) : std::runtime_error(what) {}
+};
+
+//---
+
 class OkAble
 {
 public:
@@ -215,13 +224,11 @@ public:
 	Window(const std::string& title, int width, int height);
 	Window(const Window&) = delete;
 	~Window();
-	bool Ok() const { return ok; }
+	SDL_Window* unwrap() { return wnd; }
 
 private:
 
-	bool ok = false;
 	SDL_Window* wnd = nullptr;
-	SDL_GLContext ctx = nullptr;
 };
 
 } // namespace SDL
